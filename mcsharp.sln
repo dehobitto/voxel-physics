@@ -1,0 +1,24 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Voxel-Physics", "Voxel-Physics\Voxel-Physics.csproj", "{FFCB7A09-F3BC-4CDA-80AB-3B6B80F79E56}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Engine", "Engine\Engine.csproj", "{AA45EF9A-9C1B-45DD-A613-77D5C8EB0A2A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{FFCB7A09-F3BC-4CDA-80AB-3B6B80F79E56}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FFCB7A09-F3BC-4CDA-80AB-3B6B80F79E56}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FFCB7A09-F3BC-4CDA-80AB-3B6B80F79E56}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FFCB7A09-F3BC-4CDA-80AB-3B6B80F79E56}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AA45EF9A-9C1B-45DD-A613-77D5C8EB0A2A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AA45EF9A-9C1B-45DD-A613-77D5C8EB0A2A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AA45EF9A-9C1B-45DD-A613-77D5C8EB0A2A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AA45EF9A-9C1B-45DD-A613-77D5C8EB0A2A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+	EndGlobalSection
+EndGlobal

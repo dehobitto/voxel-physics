@@ -1,0 +1,6 @@
+mcsharp.sln.DotSettings.user
+*.ini
+*.json
+**/temp/*
+**/obj/*
+**/bin/*
