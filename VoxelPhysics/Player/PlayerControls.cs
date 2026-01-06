@@ -1,4 +1,4 @@
-namespace Voxel;
+namespace VoxelPhysics.Player;
 
 public class PlayerControls
 {

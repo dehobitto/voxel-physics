@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace Voxel.Misc;
+namespace VoxelPhysics.Misc;
 
 public class IniFile
 {

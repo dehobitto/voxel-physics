@@ -2,7 +2,7 @@ using System.Numerics;
 using Engine.Abstractions;
 using Raylib_cs;
 
-namespace Voxel;
+namespace VoxelPhysics.Player;
 
 public class Player : PhysicsObject
 {
@@ -12,9 +12,9 @@ public class Player : PhysicsObject
     public State GetPlayerState() => _state;
     public void SetPlayerState(State state) => _state = state;
 
-    public Player(int mass, Vector3 position, Vector3 velocity) : base(mass, position, velocity)
+    public Player(int mass, Vector3 positionVector) : base(mass, positionVector)
     {
-        Camera = new PlayerCamera(position);
+        Camera = new PlayerCamera(positionVector);
 
         _state = State.Standing;
     }
@@ -28,17 +28,17 @@ public class Player : PhysicsObject
 
         this.UpdatePhysics(dt);
         
-        if (Position.Y <= 0)
+        if (PositionVector.Y <= 0)
         {
             _state = State.Standing;
-            Position.Y = 0;
+            PositionVector.Y = 0;
             if (Velocity.Y < 0) Velocity.Y = 0;
         }
     }
 
     public void Update(float dt)
     {
-        Camera.Update(Position);
+        Camera.Update(PositionVector);
         HandlePhysics(dt);
     }
     

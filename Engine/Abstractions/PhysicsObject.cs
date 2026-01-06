@@ -2,11 +2,11 @@ using System.Numerics;
 
 namespace Engine.Abstractions;
 
-public abstract class PhysicsObject(int mass, Vector3 position, Vector3 velocity)
+public abstract class PhysicsObject(int mass, Vector3 positionVector)
 {
     public int     Mass     = mass;
-    public Vector3 Position = position;
-    public Vector3 Velocity = velocity;
+    public Vector3 PositionVector = positionVector;
+    public Vector3 Velocity = Vector3.Zero;
     
     public virtual void ApplyForce(Vector3 force)
     {
@@ -15,6 +15,6 @@ public abstract class PhysicsObject(int mass, Vector3 position, Vector3 velocity
     
     protected virtual void UpdatePhysics(float deltatime)
     {
-        Position += Velocity * deltatime;
+        PositionVector += Velocity * deltatime;
     }
 }

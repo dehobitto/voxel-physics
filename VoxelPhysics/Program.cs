@@ -1,7 +1,7 @@
 ﻿using System.Numerics;
 using Raylib_cs;
 
-namespace Voxel;
+namespace VoxelPhysics;
 
 using static Raylib;
 
@@ -15,7 +15,7 @@ internal static class Program
         
         InitWindow(general.WindowWidth, general.WindowHeight, general.WindowTitle);
         
-        var player = new Player(90, Vector3.Zero, Vector3.Zero);
+        var player = new Player.Player(mass: 90, positionVector: Vector3.Zero);
         
         SetTargetFPS(60);
         DisableCursor();
@@ -37,8 +37,6 @@ internal static class Program
             if (IsKeyDown(KeyboardKey.W))
             {
                 var force = player.Camera.GetNormalizedFlatDirection();
-                Console.WriteLine("SKJ");
-                Console.WriteLine(GetMousePosition());
                 player.ApplyForce(force);
             }
             if (IsKeyDown(KeyboardKey.S))
@@ -74,8 +72,8 @@ internal static class Program
 
         CloseWindow();
     }
-    
-    public static void DrawCube(Vector3 position, Vector3 size, Color color)
+
+    private static void DrawCube(Vector3 position, Vector3 size, Color color)
     {
         Raylib.DrawCube(position, size.X, size.Y, size.Z, color);
     }

@@ -1,10 +1,10 @@
-namespace Voxel;
+namespace VoxelPhysics;
 
 using Misc;
 
 public class General
 {
-    private const string PATH = """C:\CODE\C#\Voxel-Physics\mcsharp\UserSettings.ini""";
+    private const string PATH = """C:\CODE\C#\VoxelPhysics\mcsharp\UserSettings.ini""";
     
     public readonly int WindowWidth;
     public readonly int WindowHeight;

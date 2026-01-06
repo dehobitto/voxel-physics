@@ -1,7 +1,7 @@
 using System.Numerics;
 using Raylib_cs;
 
-namespace Voxel;
+namespace VoxelPhysics.Player;
 
 public class PlayerCamera
 {
