@@ -15,9 +15,9 @@ internal static class Program
         
         InitWindow(general.WindowWidth, general.WindowHeight, general.WindowTitle);
         
-        var player = new Player.Player(mass: 90, positionVector: Vector3.Zero);
+        var player = new Player.Player(mass: 10, positionVector: Vector3.Zero);
         
-        SetTargetFPS(60);
+        SetTargetFPS(144);
         DisableCursor();
 
         while (!WindowShouldClose())
