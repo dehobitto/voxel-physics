@@ -23,37 +23,6 @@ internal static class Program
         while (!WindowShouldClose())
         {
             float dt = GetFrameTime();
-
-            if (IsKeyDown(KeyboardKey.Space))
-            {
-                if (player.GetPlayerState() == State.Standing)
-                {
-                    player.SetPlayerState(State.InAir);
-                    var force = Vector3.UnitY * player.Mass * (float)Math.Sqrt(2*9.8) * 5;
-                    player.ApplyForce(force);
-                }
-            }
-
-            if (IsKeyDown(KeyboardKey.W))
-            {
-                var force = player.Camera.GetNormalizedFlatDirection();
-                player.ApplyForce(force);
-            }
-            if (IsKeyDown(KeyboardKey.S))
-            {
-                var force = player.Camera.GetNormalizedFlatDirection();
-                player.ApplyForce(-force);
-            }
-            if (IsKeyDown(KeyboardKey.A))
-            {
-                var force = Vector3.Normalize(Vector3.Cross(player.Camera.GetNormalizedFlatDirection(), Vector3.UnitY));
-                player.ApplyForce(-force);
-            }
-            if (IsKeyDown(KeyboardKey.D))
-            {
-                var force = Vector3.Normalize(Vector3.Cross(player.Camera.GetNormalizedFlatDirection(), Vector3.UnitY));
-                player.ApplyForce(force);
-            }
             
             player.Update(dt);
             

@@ -3,7 +3,7 @@ using Raylib_cs;
 
 namespace VoxelPhysics.Player;
 
-public class PlayerCamera
+public class PCamera
 {
     internal Camera3D RaylibCamera;
     
@@ -13,7 +13,7 @@ public class PlayerCamera
     
     private Vector3 _direction;
 
-    public PlayerCamera(Vector3 position)
+    public PCamera(Vector3 position)
     {
         RaylibCamera = new Camera3D
         {
@@ -23,8 +23,6 @@ public class PlayerCamera
             Position = position,
             Target = Vector3.Zero
         };
-        
-        
     }
 
     public Vector3 GetDirection() => _direction;
@@ -55,6 +53,5 @@ public class PlayerCamera
         
         RaylibCamera.Position = pos + Vector3.UnitY * 1.8f;
         RaylibCamera.Target = RaylibCamera.Position + _direction;
-        Console.WriteLine($"CAMERA UPDATES {mouseDelta}");
     }
 }
