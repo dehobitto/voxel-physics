@@ -4,6 +4,8 @@ using Raylib_cs;
 
 namespace Engine;
 
+using static Math;
+
 public class Chunk
 {
     const int CHUNK_SIZE = 16;
@@ -31,8 +33,21 @@ public class Chunk
             }
         }
         
+        for (int z = 0; z < CHUNK_SIZE; z++) {
+            for (int y = 0; y < CHUNK_SIZE; y++) {
+                for (int x = 0; x < CHUNK_SIZE; x++) {
+                    if (Sqrt((float)(x - CHUNK_SIZE / 2) * (x - CHUNK_SIZE / 2) + (y - CHUNK_SIZE / 2) * (y - CHUNK_SIZE / 2) + (z - CHUNK_SIZE / 2) * (z - CHUNK_SIZE / 2)) <= CHUNK_SIZE / 2) {
+                        blocks[x, y, z].IsActive = true;
+                    }
+                }
+            }
+        }
+        
         transform = Matrix4x4.CreateTranslation(position);
         material = Raylib.LoadMaterialDefault();
+        unsafe {
+            material.Maps[(int)MaterialMapIndex.Albedo].Color = Color.Red;
+        }
         
         GenerateMesh();
     }
@@ -41,7 +56,7 @@ public class Chunk
     {
         vertices.Clear();
 
-        bool faceByDefault = true;
+        bool valueByDef = true;
 
         for (int x = 0; x < CHUNK_SIZE; x++)
         {
@@ -50,10 +65,26 @@ public class Chunk
                 for (int z = 0; z < CHUNK_SIZE; z++)
                 {
                     if (!blocks[x, y, z].IsActive) continue;
+
+                    bool xNeg = valueByDef;
+                    if (x > 0)              xNeg = blocks[x - 1, y, z].IsActive;
+
+                    bool xPos = valueByDef;
+                    if (x < CHUNK_SIZE - 1) xPos = blocks[x + 1, y, z].IsActive;
+
+                    bool yNeg = valueByDef;
+                    if (y > 0)              yNeg = blocks[x, y - 1, z].IsActive;
+
+                    bool yPos = valueByDef;
+                    if (y < CHUNK_SIZE - 1) yPos = blocks[x, y + 1, z].IsActive;
+
+                    bool zNeg = valueByDef;
+                    if (z > 0)              zNeg = blocks[x, y, z - 1].IsActive;
+
+                    bool zPos = valueByDef;
+                    if (z < CHUNK_SIZE - 1) zPos = blocks[x, y, z + 1].IsActive;
                     
-                    //TODO check for neighbours, and rename faceByDefault
-                    
-                    AddCubeToData(x, y, z);
+                    AddCubeToData(x, y, z, xNeg, xPos, yNeg, yPos, zNeg, zPos);
                 }
             }
         }

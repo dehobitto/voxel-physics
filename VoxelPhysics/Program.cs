@@ -1,4 +1,5 @@
 ﻿using System.Numerics;
+using Engine;
 using Raylib_cs;
 
 namespace VoxelPhysics;
@@ -15,10 +16,15 @@ internal static class Program
         
         InitWindow(general.WindowWidth, general.WindowHeight, general.WindowTitle);
         
-        var player = new Player.Player(mass: 10, positionVector: Vector3.Zero);
+        var player = new Player.Player(mass: 1, positionVector: -Vector3.One * 50);
         
         SetTargetFPS(144);
         DisableCursor();
+        
+        var chunkManager = new ChunkManager();
+        
+        var chunk = new Chunk(1, Vector3.Zero);
+        chunkManager._chunks.Add(Vector3.Zero, chunk);
 
         while (!WindowShouldClose())
         {
@@ -32,18 +38,15 @@ internal static class Program
 
                 BeginMode3D(player.GetCamera());
                     DrawPlane(Vector3.Zero, new Vector2(50f), Color.DarkGray);
-                    DrawCube(Vector3.UnitY, Vector3.One * 0.5f, Color.Red);
+                    //DrawCube(Vector3.UnitY, Vector3.One * 0.5f, Color.Red);
                     DrawGrid(10, 1.0f);
+                    chunkManager.Draw();
+                    
                 EndMode3D();
 
             EndDrawing();
         }
 
         CloseWindow();
-    }
-
-    private static void DrawCube(Vector3 position, Vector3 size, Color color)
-    {
-        Raylib.DrawCube(position, size.X, size.Y, size.Z, color);
     }
 }

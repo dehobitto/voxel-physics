@@ -7,7 +7,7 @@ public class ChunkManager
     const int CHUNK_SIZE = 16;
     const int RENDER_DISTANCE = 2;
     
-    private Dictionary<Vector3, Chunk> _chunks = new();
+    public Dictionary<Vector3, Chunk> _chunks = new();
 
     public void Update(float dt, Vector3 cameraPosition)
     {
