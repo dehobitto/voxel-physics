@@ -41,30 +41,33 @@ public class WindowsPMS : PMovementSystem
     {
         if (Player.GetPlayerState() == State.Standing)
         {
-            Player.SetPlayerState(State.InAir);
+            Player.SetState(State.InAir);
             var force = Vector3.UnitY * Player.Mass * (float)Math.Sqrt(2*9.8) * 80;
             Player.ApplyForce(force);
         }
     }
     private void MoveForward()
     {
-        var force = Player.Camera.GetNormalizedFlatDirection();
-        force *= Player.Mass;
+        var force = Player.Camera.GetNormalizedFlatDirection() * 100;
+        
         Player.ApplyForce(force);
     }
     private void MoveRight()
     {
-        var force = Vector3.Normalize(Vector3.Cross(Player.Camera.GetNormalizedFlatDirection(), Vector3.UnitY));
+        var force = Vector3.Normalize(Vector3.Cross(Player.Camera.GetNormalizedFlatDirection(), Vector3.UnitY)) * 100;
+        
         Player.ApplyForce(force);
     }
     private void MoveLeft()
     {
-        var force = Vector3.Normalize(Vector3.Cross(Player.Camera.GetNormalizedFlatDirection(), Vector3.UnitY));
+        var force = Vector3.Normalize(Vector3.Cross(Player.Camera.GetNormalizedFlatDirection(), Vector3.UnitY)) * 100;
+        
         Player.ApplyForce(-force);
     }
     private void MoveBackwards()
     {
-        var force = Player.Camera.GetNormalizedFlatDirection();
+        var force = Player.Camera.GetNormalizedFlatDirection() * 100;
+        
         Player.ApplyForce(-force);
     }
 }

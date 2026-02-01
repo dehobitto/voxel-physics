@@ -19,8 +19,11 @@ public abstract class PhysicsObject(int mass, Vector3 positionVector) : IGameObj
     {
         Velocity += Acceleration * dt;
         
-        PositionVector += Velocity * dt;
+        float friction = 0.9f; 
+        Velocity.X *= friction;
+        Velocity.Z *= friction;
         
+        PositionVector += Velocity * dt;
         Acceleration = Vector3.Zero;
     }
 }

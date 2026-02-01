@@ -11,7 +11,7 @@ public class Player : PhysicsObject
     private State _state;
     
     public State GetPlayerState() => _state;
-    public void SetPlayerState(State state) => _state = state;
+    public void SetState(State state) => _state = state;
     private PMovementSystem pms;
 
     public Player(int mass, Vector3 positionVector) : base(mass, positionVector)
@@ -42,7 +42,7 @@ public class Player : PhysicsObject
         pms.Update(dt);
         HandlePhysics(dt);
         
-        base.Update(dt);
+        base.Update(dt); // updating the physicsobject
     }
     
     public Camera3D GetCamera()    => Camera.RaylibCamera;

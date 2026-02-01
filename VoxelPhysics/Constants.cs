@@ -22,5 +22,6 @@ public class General
 public enum State
 {
     InAir,
-    Standing
+    Standing,
+    Running
 }

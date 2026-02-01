@@ -12,11 +12,16 @@
     </ItemGroup>
 
     <ItemGroup>
+      <Folder Include="Resources\Textures\" />
       <Folder Include="Systems\" />
     </ItemGroup>
 
     <ItemGroup>
       <ProjectReference Include="..\Engine\Engine.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Include="Resources\Shaders\shadow.fs" />
     </ItemGroup>
 
 </Project>

@@ -1,4 +1,5 @@
 ﻿using System.Numerics;
+using System.Runtime.Versioning;
 using Engine;
 using Raylib_cs;
 
@@ -16,7 +17,7 @@ internal static class Program
         
         InitWindow(general.WindowWidth, general.WindowHeight, general.WindowTitle);
         
-        var player = new Player.Player(mass: 1, positionVector: -Vector3.One * 50);
+        var player = new Player.Player(mass: 1, positionVector: -Vector3.One * 20);
         
         SetTargetFPS(144);
         DisableCursor();
@@ -33,7 +34,7 @@ internal static class Program
             player.Update(dt);
             
             BeginDrawing();
-                ClearBackground(Color.Green);
+                ClearBackground(Color.SkyBlue);
                 DrawText($"X: {player.Camera.GetDirection().X}\nY: {player.GetDirection().Y}\nZ:{player.GetDirection().Z}", 10, 10, 10, Color.Black);
 
                 BeginMode3D(player.GetCamera());

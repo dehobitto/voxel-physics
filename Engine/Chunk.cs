@@ -13,9 +13,14 @@ public class Chunk
     
     private Mesh mesh; 
     private Material material;
+    private Material edgesMaterial;
     private Matrix4x4 transform;
     
     private List<Vector3> vertices = new();
+    private List<Vector2> uvs = new();
+    private List<Vector3> normals = new();
+    
+    private List<Color> colors = new();
     
     public Chunk(uint seed, Vector3 position)
     {
@@ -28,15 +33,15 @@ public class Chunk
                 for (int z = 0; z < CHUNK_SIZE; z++)
                 {
                     blocks[x, y, z] = new Block(); 
-                    if (y == 0) blocks[x, y, z].IsActive = true; 
                 }
             }
         }
         
-        for (int z = 0; z < CHUNK_SIZE; z++) {
-            for (int y = 0; y < CHUNK_SIZE; y++) {
-                for (int x = 0; x < CHUNK_SIZE; x++) {
-                    if (Sqrt((float)(x - CHUNK_SIZE / 2) * (x - CHUNK_SIZE / 2) + (y - CHUNK_SIZE / 2) * (y - CHUNK_SIZE / 2) + (z - CHUNK_SIZE / 2) * (z - CHUNK_SIZE / 2)) <= CHUNK_SIZE / 2) {
+        var diameter = CHUNK_SIZE;
+        for (int z = 0; z < diameter; z++) {
+            for (int y = 0; y < diameter; y++) {
+                for (int x = 0; x < diameter; x++) {
+                    if (Sqrt((float)(x - diameter / 2) * (x - diameter / 2) + (y - diameter / 2) * (y - diameter / 2) + (z - diameter / 2) * (z - diameter / 2)) <= diameter / 2) {
                         blocks[x, y, z].IsActive = true;
                     }
                 }
@@ -44,19 +49,44 @@ public class Chunk
         }
         
         transform = Matrix4x4.CreateTranslation(position);
-        material = Raylib.LoadMaterialDefault();
-        unsafe {
-            material.Maps[(int)MaterialMapIndex.Albedo].Color = Color.Red;
-        }
         
+        material = Raylib.LoadMaterialDefault();
+        edgesMaterial = Raylib.LoadMaterialDefault();
+
+        string path = "../../../Resources/Textures/";
+    
+        // 1. Load the Textures
+        Texture2D colorTex = Raylib.LoadTexture(path + "Rock058_4K-JPG_Color.jpg");
+        Texture2D normalTex = Raylib.LoadTexture(path + "Rock058_4K-JPG_NormalGL.jpg");
+        Texture2D aoTex = Raylib.LoadTexture(path + "Rock058_4K-JPG_AmbientOcclusion.jpg");
+        Texture2D roughTex = Raylib.LoadTexture(path + "Rock058_4K-JPG_Roughness.jpg");
+
+        // 2. Assign to Material Maps
+        // Albedo is the base color
+        Raylib.SetMaterialTexture(ref material, (int)MaterialMapIndex.Albedo, colorTex);
+    
+        // Normal map for surface detail
+        Raylib.SetMaterialTexture(ref material, MaterialMapIndex.Normal, normalTex);
+    
+        // Ambient Occlusion for baked shadows in crevices
+        Raylib.SetMaterialTexture(ref material, MaterialMapIndex.Occlusion, aoTex);
+    
+        // Roughness (Often assigned to the Roughness or Metalness index depending on the shader)
+        Raylib.SetMaterialTexture(ref material, MaterialMapIndex.Roughness, roughTex);
+
+        unsafe {
+            material.Maps[(int)MaterialMapIndex.Albedo].Color = Color.White;
+            edgesMaterial.Maps[(int)MaterialMapIndex.Albedo].Color = Color.Red;
+        }
+
         GenerateMesh();
     }
     
     public void GenerateMesh()
     {
         vertices.Clear();
-
-        bool valueByDef = true;
+        uvs.Clear();
+        normals.Clear();
 
         for (int x = 0; x < CHUNK_SIZE; x++)
         {
@@ -66,23 +96,12 @@ public class Chunk
                 {
                     if (!blocks[x, y, z].IsActive) continue;
 
-                    bool xNeg = valueByDef;
-                    if (x > 0)              xNeg = blocks[x - 1, y, z].IsActive;
-
-                    bool xPos = valueByDef;
-                    if (x < CHUNK_SIZE - 1) xPos = blocks[x + 1, y, z].IsActive;
-
-                    bool yNeg = valueByDef;
-                    if (y > 0)              yNeg = blocks[x, y - 1, z].IsActive;
-
-                    bool yPos = valueByDef;
-                    if (y < CHUNK_SIZE - 1) yPos = blocks[x, y + 1, z].IsActive;
-
-                    bool zNeg = valueByDef;
-                    if (z > 0)              zNeg = blocks[x, y, z - 1].IsActive;
-
-                    bool zPos = valueByDef;
-                    if (z < CHUNK_SIZE - 1) zPos = blocks[x, y, z + 1].IsActive;
+                    bool xNeg = (x > 0) ? blocks[x - 1, y, z].IsActive : false;
+                    bool xPos = (x < CHUNK_SIZE - 1) ? blocks[x + 1, y, z].IsActive : false;
+                    bool yNeg = (y > 0) ? blocks[x, y - 1, z].IsActive : false;
+                    bool yPos = (y < CHUNK_SIZE - 1) ? blocks[x, y + 1, z].IsActive : false;
+                    bool zNeg = (z > 0) ? blocks[x, y, z - 1].IsActive : false;
+                    bool zPos = (z < CHUNK_SIZE - 1) ? blocks[x, y, z + 1].IsActive : false;
                     
                     AddCubeToData(x, y, z, xNeg, xPos, yNeg, yPos, zNeg, zPos);
                 }
@@ -92,91 +111,94 @@ public class Chunk
         BuildRaylibMesh();
     }
     
-    void AddCubeToData(
-        int x, int y, int z,
-        bool xNeg = true, bool xPos = true,
-        bool yNeg = true, bool yPos = true,
-        bool zNeg = true, bool zPos = true)
+    void AddCubeToData(int x, int y, int z, bool xNeg, bool xPos, bool yNeg, bool yPos, bool zNeg, bool zPos)
     {
-        // Top Face (+Y)
-        if (!yPos)
-        {
-            vertices.Add(new Vector3(x,     y + 1, z));
-            vertices.Add(new Vector3(x,     y + 1, z + 1));
-            vertices.Add(new Vector3(x + 1, y + 1, z));
-            vertices.Add(new Vector3(x + 1, y + 1, z));
-            vertices.Add(new Vector3(x,     y + 1, z + 1));
-            vertices.Add(new Vector3(x + 1, y + 1, z + 1));
-        }
+        if (!yPos) AddFace(x, y, z, "top");
+        if (!yNeg) AddFace(x, y, z, "bottom");
+        if (!zPos) AddFace(x, y, z, "front");
+        if (!zNeg) AddFace(x, y, z, "back");
+        if (!xPos) AddFace(x, y, z, "right");
+        if (!xNeg) AddFace(x, y, z, "left");
+    }
 
-        // Bottom Face (-Y)
-        if (!yNeg)
-        {
-            vertices.Add(new Vector3(x,     y, z + 1));
-            vertices.Add(new Vector3(x,     y, z));
-            vertices.Add(new Vector3(x + 1, y, z + 1));
-            vertices.Add(new Vector3(x + 1, y, z + 1));
-            vertices.Add(new Vector3(x,     y, z));
-            vertices.Add(new Vector3(x + 1, y, z));
-        }
+    private void AddFace(int x, int y, int z, string side)
+    {
+        Vector3 n = side switch {
+            "top" => Vector3.UnitY, "bottom" => -Vector3.UnitY,
+            "front" => Vector3.UnitZ, "back" => -Vector3.UnitZ,
+            "right" => Vector3.UnitX, _ => -Vector3.UnitX
+        };
 
-        // Front Face (+Z)
-        if (!zPos)
-        {
-            vertices.Add(new Vector3(x,     y,     z + 1));
-            vertices.Add(new Vector3(x + 1, y,     z + 1));
-            vertices.Add(new Vector3(x,     y + 1, z + 1));
-            vertices.Add(new Vector3(x,     y + 1, z + 1));
-            vertices.Add(new Vector3(x + 1, y,     z + 1));
-            vertices.Add(new Vector3(x + 1, y + 1, z + 1));
-        }
+        for(int i = 0; i < 6; i++) normals.Add(n);
 
-        // Back Face (-Z)
-        if (!zNeg)
-        {
-            vertices.Add(new Vector3(x + 1, y,     z));
-            vertices.Add(new Vector3(x,     y,     z));
-            vertices.Add(new Vector3(x + 1, y + 1, z));
-            vertices.Add(new Vector3(x + 1, y + 1, z));
-            vertices.Add(new Vector3(x,     y,     z));
-            vertices.Add(new Vector3(x,     y + 1, z));
+        if (side == "top") {
+            vertices.Add(new(x, y+1, z)); uvs.Add(new(0, 0));
+            vertices.Add(new(x, y+1, z+1)); uvs.Add(new(0, 1));
+            vertices.Add(new(x+1, y+1, z)); uvs.Add(new(1, 0));
+            vertices.Add(new(x+1, y+1, z)); uvs.Add(new(1, 0));
+            vertices.Add(new(x, y+1, z+1)); uvs.Add(new(0, 1));
+            vertices.Add(new(x+1, y+1, z+1)); uvs.Add(new(1, 1));
         }
-
-        // Right Face (+X)
-        if (!xPos)
-        {
-            vertices.Add(new Vector3(x + 1, y,     z + 1));
-            vertices.Add(new Vector3(x + 1, y,     z));
-            vertices.Add(new Vector3(x + 1, y + 1, z + 1));
-            vertices.Add(new Vector3(x + 1, y + 1, z + 1));
-            vertices.Add(new Vector3(x + 1, y,     z));
-            vertices.Add(new Vector3(x + 1, y + 1, z));
+        else if (side == "bottom") {
+            vertices.Add(new(x, y, z+1)); uvs.Add(new(0, 0));
+            vertices.Add(new(x, y, z)); uvs.Add(new(0, 1));
+            vertices.Add(new(x+1, y, z+1)); uvs.Add(new(1, 0));
+            vertices.Add(new(x+1, y, z+1)); uvs.Add(new(1, 0));
+            vertices.Add(new(x, y, z)); uvs.Add(new(0, 1));
+            vertices.Add(new(x+1, y, z)); uvs.Add(new(1, 1));
         }
-
-        // Left Face (-X)
-        if (!xNeg)
-        {
-            vertices.Add(new Vector3(x,     y,     z));
-            vertices.Add(new Vector3(x,     y,     z + 1));
-            vertices.Add(new Vector3(x,     y + 1, z));
-            vertices.Add(new Vector3(x,     y + 1, z));
-            vertices.Add(new Vector3(x,     y,     z + 1));
-            vertices.Add(new Vector3(x,     y + 1, z + 1));
+        else if (side == "front") {
+            vertices.Add(new(x, y, z+1)); uvs.Add(new(0, 1));
+            vertices.Add(new(x+1, y, z+1)); uvs.Add(new(1, 1));
+            vertices.Add(new(x, y+1, z+1)); uvs.Add(new(0, 0));
+            vertices.Add(new(x, y+1, z+1)); uvs.Add(new(0, 0));
+            vertices.Add(new(x+1, y, z+1)); uvs.Add(new(1, 1));
+            vertices.Add(new(x+1, y+1, z+1)); uvs.Add(new(1, 0));
+        }
+        else if (side == "back") {
+            vertices.Add(new(x+1, y, z)); uvs.Add(new(0, 1));
+            vertices.Add(new(x, y, z)); uvs.Add(new(1, 1));
+            vertices.Add(new(x+1, y+1, z)); uvs.Add(new(0, 0));
+            vertices.Add(new(x+1, y+1, z)); uvs.Add(new(0, 0));
+            vertices.Add(new(x, y, z)); uvs.Add(new(1, 1));
+            vertices.Add(new(x, y+1, z)); uvs.Add(new(1, 0));
+        }
+        else if (side == "right") {
+            vertices.Add(new(x+1, y, z+1)); uvs.Add(new(0, 1));
+            vertices.Add(new(x+1, y, z)); uvs.Add(new(1, 1));
+            vertices.Add(new(x+1, y+1, z+1)); uvs.Add(new(0, 0));
+            vertices.Add(new(x+1, y+1, z+1)); uvs.Add(new(0, 0));
+            vertices.Add(new(x+1, y, z)); uvs.Add(new(1, 1));
+            vertices.Add(new(x+1, y+1, z)); uvs.Add(new(1, 0));
+        }
+        else if (side == "left") {
+            vertices.Add(new(x, y, z)); uvs.Add(new(0, 1));
+            vertices.Add(new(x, y, z+1)); uvs.Add(new(1, 1));
+            vertices.Add(new(x, y+1, z)); uvs.Add(new(0, 0));
+            vertices.Add(new(x, y+1, z)); uvs.Add(new(0, 0));
+            vertices.Add(new(x, y, z+1)); uvs.Add(new(1, 1));
+            vertices.Add(new(x, y+1, z+1)); uvs.Add(new(1, 0));
         }
     }
 
     void BuildRaylibMesh()
     {
+        if (mesh.VertexCount > 0) Raylib.UnloadMesh(mesh);
+        
         mesh = new Mesh();
         mesh.TriangleCount = vertices.Count / 3;
         mesh.VertexCount = vertices.Count;
 
         mesh.AllocVertices();
+        mesh.AllocTexCoords();
+        mesh.AllocNormals();
 
         unsafe
         {
-            Span<Vector3> meshVertices = new Span<Vector3>(mesh.Vertices, vertices.Count);
-            CollectionsMarshal.AsSpan(vertices).CopyTo(meshVertices);
+            CollectionsMarshal.AsSpan(vertices).CopyTo(new Span<Vector3>(mesh.Vertices, vertices.Count));
+            CollectionsMarshal.AsSpan(uvs).CopyTo(new Span<Vector2>(mesh.TexCoords, uvs.Count));
+            CollectionsMarshal.AsSpan(normals).CopyTo(new Span<Vector3>(mesh.Normals, normals.Count));
+            CollectionsMarshal.AsSpan(colors).CopyTo(new Span<Color>(mesh.Colors, colors.Count));
         }
         
         Raylib.UploadMesh(ref mesh, false);
@@ -185,10 +207,15 @@ public class Chunk
     public void Draw()
     {
         Raylib.DrawMesh(mesh, material, transform);
+        Rlgl.EnableWireMode();
+        //Raylib.DrawMesh(mesh, edgesMaterial, transform);
+        Rlgl.DisableWireMode();
     }
     
     public void Unload()
     {
         Raylib.UnloadMesh(mesh);
+        Raylib.UnloadMaterial(material);
+        Raylib.UnloadMaterial(edgesMaterial);
     }
 }

@@ -15,7 +15,7 @@ public class ChunkManager
         int chunkY = (int)Math.Floor(cameraPosition.Y / CHUNK_SIZE); 
         int chunkZ = (int)Math.Floor(cameraPosition.Z / CHUNK_SIZE);
         
-        UpdateLoadList(new Vector3(chunkX, 0, chunkZ));
+        UpdateLoadList(new Vector3(chunkX, chunkY, chunkZ));
     }
 
     void UpdateLoadList(Vector3 centerChunkPos)
