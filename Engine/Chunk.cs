@@ -22,7 +22,7 @@ public class Chunk
     
     private List<Color> colors = new();
     
-    public Chunk(uint seed, Vector3 position)
+    public Chunk(uint seed, Vector3 position, Shader shader)
     {
         blocks = new Block[CHUNK_SIZE, CHUNK_SIZE, CHUNK_SIZE];
         
@@ -51,6 +51,7 @@ public class Chunk
         transform = Matrix4x4.CreateTranslation(position);
         
         material = Raylib.LoadMaterialDefault();
+        material.Shader = shader;
         edgesMaterial = Raylib.LoadMaterialDefault();
 
         string path = "../../../Resources/Textures/";
@@ -60,24 +61,40 @@ public class Chunk
         Texture2D normalTex = Raylib.LoadTexture(path + "Rock058_4K-JPG_NormalGL.jpg");
         Texture2D aoTex = Raylib.LoadTexture(path + "Rock058_4K-JPG_AmbientOcclusion.jpg");
         Texture2D roughTex = Raylib.LoadTexture(path + "Rock058_4K-JPG_Roughness.jpg");
+        Texture2D dispTex = Raylib.LoadTexture(path + "Rock058_4K-JPG_Displacement.jpg");
+        int dispLoc = Raylib.GetShaderLocation(material.Shader, "displacementMap");
+        
+        // В конструкторе Chunk, после загрузки textures:
 
-        // 2. Assign to Material Maps
-        // Albedo is the base color
-        Raylib.SetMaterialTexture(ref material, (int)MaterialMapIndex.Albedo, colorTex);
-    
-        // Normal map for surface detail
+// 1. Albedo -> Слот 0
+        Raylib.SetMaterialTexture(ref material, MaterialMapIndex.Albedo, colorTex);
+
+// 2. Metallic -> Слот 1
+// Если у тебя нет карты металла (для камней она черная),
+// создай 1-пиксельную черную текстуру или загрузи любую заглушку.
+// Иначе шейдер будет читать мусор.
+        Image imgMetal = Raylib.GenImageColor(4, 4, Color.Black);
+        Texture2D texMetal = Raylib.LoadTextureFromImage(imgMetal);
+        Raylib.UnloadImage(imgMetal);
+        Raylib.SetMaterialTexture(ref material, MaterialMapIndex.Metalness, texMetal);
+
+// 3. Normal -> Слот 2
         Raylib.SetMaterialTexture(ref material, MaterialMapIndex.Normal, normalTex);
-    
-        // Ambient Occlusion for baked shadows in crevices
-        Raylib.SetMaterialTexture(ref material, MaterialMapIndex.Occlusion, aoTex);
-    
-        // Roughness (Often assigned to the Roughness or Metalness index depending on the shader)
+
+// 4. Roughness -> Слот 3
         Raylib.SetMaterialTexture(ref material, MaterialMapIndex.Roughness, roughTex);
 
-        unsafe {
-            material.Maps[(int)MaterialMapIndex.Albedo].Color = Color.White;
-            edgesMaterial.Maps[(int)MaterialMapIndex.Albedo].Color = Color.Red;
-        }
+// 5. AO -> Слот 4
+        Raylib.SetMaterialTexture(ref material, MaterialMapIndex.Occlusion, aoTex);
+
+// 6. Displacement -> Слот 6 (Height)
+        Raylib.SetMaterialTexture(ref material, MaterialMapIndex.Height, dispTex);
+
+// ВАЖНО для Дисплейсмента:
+// Чтобы вершины смещались, меш должен иметь достаточно полигонов. 
+// Твой меш сейчас состоит из пары треугольников на грань. 
+// Смещение будет двигать весь угол целиком, это может порвать геометрию.
+// Но шейдер работать будет.
 
         GenerateMesh();
     }
@@ -186,20 +203,30 @@ public class Chunk
         if (mesh.VertexCount > 0) Raylib.UnloadMesh(mesh);
         
         mesh = new Mesh();
-        mesh.TriangleCount = vertices.Count / 3;
+        mesh.TriangleCount = vertices.Count / 3; // Внимание: если vertices хранит просто точки, а не треугольники, тут может быть ошибка. Но у вас вроде AddFace добавляет по 6 вершин, так что ок.
         mesh.VertexCount = vertices.Count;
 
         mesh.AllocVertices();
         mesh.AllocTexCoords();
         mesh.AllocNormals();
+        // ВАЖНО: Выделяем память под тангенсы, иначе GenMeshTangents некуда писать
+        mesh.AllocTangents(); 
+        
+        // Добавляем цвета, если используете
+        // mesh.AllocColors(); 
 
         unsafe
         {
             CollectionsMarshal.AsSpan(vertices).CopyTo(new Span<Vector3>(mesh.Vertices, vertices.Count));
             CollectionsMarshal.AsSpan(uvs).CopyTo(new Span<Vector2>(mesh.TexCoords, uvs.Count));
             CollectionsMarshal.AsSpan(normals).CopyTo(new Span<Vector3>(mesh.Normals, normals.Count));
-            CollectionsMarshal.AsSpan(colors).CopyTo(new Span<Color>(mesh.Colors, colors.Count));
+            
+            // Если используете цвета вершин
+            // CollectionsMarshal.AsSpan(colors).CopyTo(new Span<Color>(mesh.Colors, colors.Count));
         }
+        
+        // Теперь генерация тангенсов сработает корректно
+        Raylib.GenMeshTangents(ref mesh);
         
         Raylib.UploadMesh(ref mesh, false);
     }

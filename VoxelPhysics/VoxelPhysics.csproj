@@ -5,6 +5,7 @@
         <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     </PropertyGroup>
 
     <ItemGroup>
@@ -18,10 +19,6 @@
 
     <ItemGroup>
       <ProjectReference Include="..\Engine\Engine.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <None Include="Resources\Shaders\shadow.fs" />
     </ItemGroup>
 
 </Project>

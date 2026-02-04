@@ -1,4 +1,5 @@
 using System.Numerics;
+using Raylib_cs;
 
 namespace Engine;
 
@@ -30,8 +31,8 @@ public class ChunkManager
                 {
                     Vector3 worldPos = targetPos * CHUNK_SIZE;
                     
-                    Chunk newChunk = new Chunk(12345, worldPos);
-                    _chunks.Add(targetPos, newChunk);
+                    //Chunk newChunk = new Chunk(12345, worldPos, );
+                    //_chunks.Add(targetPos, newChunk);
                 }
             }
         }
